@@ -9,6 +9,11 @@ class TNode(object):
         self.page = page
         self.parent = parent
         self.children = children
+    def hasChild(self):
+        if len(self.children) != 0:
+            return True
+        else: return False
+
 
 
 
@@ -16,6 +21,11 @@ class Page(object):
     def __init__(self,url, passed):
         self.url = url
         self.passed = passed
+    def isOnDomain(self):
+        if(self.url.find("sll.uccs.edu") == -1):
+            return False
+        else:
+            return True
 
 def testUrl(link):
     opener = urllib.request.urlopen(link)
@@ -38,11 +48,13 @@ def makePage(temp):
         current = TNode(page, None, None)
         children = []
         for x in tree.xpath('//a/@href'):
+
             if(x.find("mailto")!=-1):
                 newPage = Page(url, False)
                 children.append(TNode(newPage, current, None))
                 print(x)
-            else:
+            elif(x.find(".com")!=-1 or x.find(".org")!=-1 or x.find(".net")!=-1or x.find(".edu")!=-1):
+
                 if(x.find("http:")==-1 and x.find("https:")==-1):
                     url = "http:"+x
                 else:
@@ -52,7 +64,34 @@ def makePage(temp):
                 newPage = Page(url, test)
                 children.append(TNode(newPage, current, None))
                 current.children = children
+            else:
+                print("not a url")
     return current
 
+#algorithm for make site function
+#while link is on uccs domain
+#if page.passed is true
+#make page
+#move onto children
+def makeSite(link):
+    root = makePage(link)
+    makeSiteHelper(root)
+
+
+
+
+    return root
+def makeSiteHelper(current):
+    if current.page.isOnDomain():
+        for x in current.children:
+            if(x.page.isOnDomain()):
+                print("######################")
+                print(x.page.url)
+                x = makePage(x.page.url)
+        for x in current.children:
+            makeSiteHelper(current.children.pop(0))
+
 link = 'http://sll.uccs.edu/'
-root = makePage(link)
+root = makeSite(link)
+
+
