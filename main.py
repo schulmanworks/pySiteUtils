@@ -98,10 +98,10 @@ def makeSiteHelper(current):
                     print("######################")
                     x = makePage(x.page.url, current)
             for x in current.children:
-                if(finished_links.count(x.page.url)> 1):
-                    temp = current.children.pop()
-                    current.children.append(temp)
-                    makeSiteHelper(temp)
+                if(finished_links.count(x.page.url)< 3):
+                   # temp = current.children.pop()
+                    #current.children.append(temp)
+                    makeSiteHelper(x)
                 else:
                     print("url already finished")
     else:
@@ -113,9 +113,9 @@ def validateHelper(current):
     if(current.children is not None):
         for x in current.children:
             if x.page.passed:
-                temp = current.children.pop()
-                current.children.append(temp)
-                validateHelper(temp)
+               # temp = current.children.pop()
+                #current.children.append(temp)
+                validateHelper(x)
                 continue
             else:
                 message = x.parent.page.url + "this page failed to load URL; "+x.page.url
