@@ -58,7 +58,7 @@ def makePage(temp, parent):
             if(x.find("mailto")!=-1):
                 newPage = Page(url, False)
                 children.append(TNode(newPage, current, None))
-
+				
             elif(x.find(".com")!=-1 or x.find(".org")!=-1 or x.find(".net")!=-1or x.find(".edu")!=-1 and x.find("club_find") ==-1):
 
                 if(x.find("http:")==-1 and x.find("https:")==-1):
@@ -69,7 +69,7 @@ def makePage(temp, parent):
                 test = testUrl(url)
                 newPage = Page(url, test)
                 children.append(TNode(newPage, current, None))
-                current.children = children
+        current.children = children
             #else:
                 #print("not a url")
     return current
