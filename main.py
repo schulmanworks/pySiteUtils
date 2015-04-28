@@ -54,7 +54,7 @@ def makePage(temp, parent):
         current = TNode(page, None, None)
         children = []
         for x in tree.xpath('//a/@href'):
-            print("URL: "+x)
+            #print("URL: "+x)
             if(x.find("mailto")!=-1):
                 newPage = Page(url, False)
                 children.append(TNode(newPage, current, None))
