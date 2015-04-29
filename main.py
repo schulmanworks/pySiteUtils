@@ -39,6 +39,7 @@ def testUrl(link):
         return False
 
 def makePage(temp, parent):
+    print("loading")
     link = temp
     try:
         opener = urllib.request.urlopen(link)
@@ -47,14 +48,14 @@ def makePage(temp, parent):
         return TNode(Page(link, False),parent,None)
     #print(code)
     if(code == 200):
-       # print("working")
+       #
         url = requests.get(link)
         tree = html.fromstring(url.text)
         page = Page(link, True)
-        current = TNode(page, None, None)
+        current = TNode(page, parent, None)
         children = []
         for x in tree.xpath('//a/@href'):
-            #print("URL: "+x)
+            print(".")
             if(x.find("mailto")!=-1):
                 newPage = Page(url, False)
                 children.append(TNode(newPage, current, None))
@@ -72,7 +73,9 @@ def makePage(temp, parent):
         current.children = children
             #else:
                 #print("not a url")
-    return current
+        return current
+    else:
+        return TNode(Page(link, False), parent, None)
 
 #algorithm for make site function
 #while link is on uccs domain
@@ -82,10 +85,6 @@ def makePage(temp, parent):
 def makeSite(link):
     root = makePage(link, None)
     makeSiteHelper(root)
-
-
-
-
     return root
 def makeSiteHelper(current):
     if current.page.isOnDomain():
@@ -116,22 +115,28 @@ def validateHelper(current):
                # temp = current.children.pop()
                 #current.children.append(temp)
                 validateHelper(x)
-                continue
+
             else:
                 message = x.parent.page.url + "this page failed to load URL; "+x.page.url
                 failed_links_messages.append(message)
                 print(message)
 
 #array of sites you want scanned. probably a bit redundant
-links = {'http://sll.uccs.edu/', 'http://sll.uccs.edu/org/sga', "http://sll.uccs.edu/org/osa", "http://sll.uccs.edu/org/commute",
-         "http://sll.uccs.edu/org/liveleadership", "http://sll.uccs.edu/org/lobbies", "http://radio.uccs.edu/" , "http://sll.uccs.edu/org/uccslead"}
+#links = {'http://sll.uccs.edu/', 'http://sll.uccs.edu/org/sga', "http://sll.uccs.edu/org/osa", "http://sll.uccs.edu/org/commute",
+#         "http://sll.uccs.edu/org/liveleadership", "http://sll.uccs.edu/org/lobbies", "http://radio.uccs.edu/" , "http://sll.uccs.edu/org/uccslead"}
+links  = {"http://sll.uccs.edu/","http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership" }
+print("Building site: ")
 for x in links:
-    print("SCANNED PAGES: ")
     root = makeSite(x)
-    print("Site tree complete")
-    print("*********************************************************")
     validate(root)
-    print("Validation complete")
+    print("Finished URL: "+x)
+    print("----------------------------------")
+    print("Validation:")
+    for x in failed_links_messages:
+        print(x)
+print("Site tree complete")
+print("Validation complete")
+print("*********************************************************")
 print("FULL LIST OF FAILED LINKS: ")
 for x in failed_links_messages:
     print(x)
