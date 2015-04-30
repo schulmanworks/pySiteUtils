@@ -22,15 +22,18 @@ class Page(object):
         self.url = url
         self.passed = passed
     def isOnDomain(self):
-        if(self.url.find("sll.uccs.edu") == -1 and self.url.find("radio.uccs.edu") == -1):#need to add all sll domains/sub-domains
+        if(self.url.find("sll.uccs.edu") == -1 ):#and self.url.find("radio.uccs.edu") == -1):#need to add all sll domains/sub-domains
             return False
         else:
             return True
 
 def testUrl(link):
     try:
+        words = ["404"]
         opener = urllib.request.urlopen(link)
+        site = opener.read()
         code = opener.getcode()
+
         if(code == 200):
             return True
         else:
@@ -39,6 +42,7 @@ def testUrl(link):
         return False
 
 def makePage(temp, parent):
+
     print("loading")
     link = temp
     try:
@@ -52,27 +56,25 @@ def makePage(temp, parent):
         url = requests.get(link)
         tree = html.fromstring(url.text)
         page = Page(link, True)
-        current = TNode(page, parent, None)
-        children = []
+        current = TNode(page, parent, children=[])
+
         for x in tree.xpath('//a/@href'):
             print(".")
             if(x.find("mailto")!=-1):
-                newPage = Page(url, False)
-                children.append(TNode(newPage, current, None))
+
+                newPage = Page(x, False)
+                current.children.append(TNode(newPage, current, None))
 				
             elif(x.find(".com")!=-1 or x.find(".org")!=-1 or x.find(".net")!=-1or x.find(".edu")!=-1 and x.find("club_find") ==-1):
 
                 if(x.find("http:")==-1 and x.find("https:")==-1):
-                    url = "http:"+x
-                else:
-                    url = x
+                    x = "http:"+x
 
-                test = testUrl(url)
-                newPage = Page(url, test)
-                children.append(TNode(newPage, current, None))
-        current.children = children
-            #else:
-                #print("not a url")
+                test = testUrl(x)
+                newPage = Page(x, test)
+                current.children.append(TNode(newPage, current, None))
+
+       
         return current
     else:
         return TNode(Page(link, False), parent, None)
@@ -83,28 +85,34 @@ def makePage(temp, parent):
 #make page
 #move onto children
 def makeSite(link):
+    print("######################")
+    print("page: "+link)
     root = makePage(link, None)
     makeSiteHelper(root)
     return root
 def makeSiteHelper(current):
     if current.page.isOnDomain():
         if(current.children is not None):
+            i = 0
             for x in current.children:
-                if(x.page.isOnDomain()):
+                if(x.page.isOnDomain() and x.page.url not in finished_links and x.page.passed):
                     finished_links.append(x.page.url)#keeps track of links we have looked at
-
-                    print("page: "+x.page.url)
                     print("######################")
-                    x = makePage(x.page.url, current)
+                    print("page: "+x.page.url)
+                    tempPage = makePage(x.page.url, current)
+                    current.children.insert(i,tempPage)
+                    current.children.remove(x)
+                    makeSiteHelper(tempPage)
+                    i = 1+i
+
+def printTree(root):
+    printTreeHelper(root)
+def printTreeHelper(current):
+    if current is not None:
+        print(current.page.url)
+        if current.children is not None:
             for x in current.children:
-                if(finished_links.count(x.page.url)< 3):
-                   # temp = current.children.pop()
-                    #current.children.append(temp)
-                    makeSiteHelper(x)
-                else:
-                    print("url already finished")
-    else:
-        return
+                printTreeHelper(x)
 failed_links_messages = []
 def validate(root):
     validateHelper(root)
@@ -118,25 +126,24 @@ def validateHelper(current):
 
             else:
                 message = x.parent.page.url + "this page failed to load URL; "+x.page.url
-                failed_links_messages.append(message)
                 print(message)
 
 #array of sites you want scanned. probably a bit redundant
 #links = {'http://sll.uccs.edu/', 'http://sll.uccs.edu/org/sga', "http://sll.uccs.edu/org/osa", "http://sll.uccs.edu/org/commute",
 #         "http://sll.uccs.edu/org/liveleadership", "http://sll.uccs.edu/org/lobbies", "http://radio.uccs.edu/" , "http://sll.uccs.edu/org/uccslead"}
-links  = {"http://sll.uccs.edu/","http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership" }
+#links  = {"http://sll.uccs.edu/","http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership","http://sll.uccs.edu/org/clubhelp/" }
+links={"http://sll.uccs.edu/"}
 print("Building site: ")
 for x in links:
+
     root = makeSite(x)
-    validate(root)
+
     print("Finished URL: "+x)
     print("----------------------------------")
     print("Validation:")
-    for x in failed_links_messages:
-        print(x)
-print("Site tree complete")
-print("Validation complete")
+    validate(root)
+    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+    print("Printed Tree:")
+    printTree(root)
+print("Process completed")
 print("*********************************************************")
-print("FULL LIST OF FAILED LINKS: ")
-for x in failed_links_messages:
-    print(x)
