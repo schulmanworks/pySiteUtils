@@ -61,9 +61,9 @@ def makePage(temp, parent):
         for x in tree.xpath('//a/@href'):
             print(".")
             if(x.find("mailto")!=-1):
-
-                newPage = Page(x, False)
-                current.children.append(TNode(newPage, current, None))
+                continue
+                #newPage = Page(x, False)
+                #current.children.append(TNode(newPage, current, None))
 				
             elif(x.find(".com")!=-1 or x.find(".org")!=-1 or x.find(".net")!=-1or x.find(".edu")!=-1 and x.find("club_find") ==-1):
 
@@ -125,7 +125,8 @@ def validateHelper(current):
                 validateHelper(x)
 
             else:
-                message = x.parent.page.url + "this page failed to load URL; "+x.page.url
+
+                message = x.parent.page.url + "this page failed to load URL: "+x.page.url
                 print(message)
 
 #array of sites you want scanned. probably a bit redundant
@@ -144,6 +145,6 @@ for x in links:
     validate(root)
     print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
     print("Printed Tree:")
-    printTree(root)
+    #printTree(root)
 print("Process completed")
 print("*********************************************************")
