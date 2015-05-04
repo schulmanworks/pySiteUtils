@@ -14,13 +14,19 @@ class TNode(object): #Nodes of the tree. 1 parent, unlimited children via list
             return True
         else: return False
 
-
-
-
 class Page(object):#when passed is true, the page has a 200 code. Otherwise it fails
+    text = "Not yet set"
     def __init__(self,url, passed):
         self.url = url
         self.passed = passed
+
+    def __init__(self,url,passed):
+        self.url = url
+        self.passed = passed
+
+    def setText(self,text):
+        self.text = text
+
     def isOnDomain(self):
         if(self.url.find("sll.uccs.edu") == -1 and self.url.find("uccs.edu/sll")==-1 and self.url.find("uccs.edu/sga")==-1):#and self.url.find("radio.uccs.edu") == -1):#need to add all sll domains/sub-domains
             return False
@@ -30,7 +36,6 @@ class Page(object):#when passed is true, the page has a 200 code. Otherwise it f
 #tkaes a string
 def testUrl(link):#test url for non 200 message
     try:
-        words = ["404"]
         opener = urllib.request.urlopen(link)
         site = opener.read()
         code = opener.getcode()
@@ -43,24 +48,27 @@ def testUrl(link):#test url for non 200 message
         return False
 #takes a string and a node
 def makePage(temp, parent):
-
-   # sys.stdout.write("Loading ")
     link = temp
     try:
         opener = urllib.request.urlopen(link)
         code = opener.getcode()
     except:
-        return TNode(Page(link, False),parent,None)
-    #print(code)
+        return TNode(Page(link, False),parent,{None})
+
     if(code == 200):
        #
         url = requests.get(link)
         tree = html.fromstring(url.text)
         page = Page(link, True)
         current = TNode(page, parent, children=[])
+        pageHasURLs = False
+        #urlText = tree.xpath('//a/text()')
+        urls = tree.xpath('//a/@href')
+        for x in urls:#for all the links in a page
 
-        for x in tree.xpath('//a/@href'):#for all the links in a page
-           # sys.stdout.write(".")
+            pageHasURLs = True
+
+
             if(x.find("mailto")!=-1):#mailto links are ignored, remove continue and comment marks to mark them as failed instead
                 continue
                 #newPage = Page(x, False)
@@ -74,9 +82,12 @@ def makePage(temp, parent):
 
                 test = testUrl(x)
                 newPage = Page(x, test)
+                #newPage.setText(text)
                 current.children.append(TNode(newPage, current, None))
 
-       
+        if(not pageHasURLs):#tests for 404 pages that don't return a 404 error message. Will break if urls are added to 404 pages.
+            current.page.passed = False
+
         return current
     else:
         return TNode(Page(link, False), parent, None)
@@ -112,10 +123,11 @@ def printTree(root):#takes a node
     printTreeHelper(root)
 def printTreeHelper(current):#takes a node
     if current is not None:
-        print(current.page.url)
+        print("%50s%-s",current.page.url,current.page.passed)
         if current.children is not None:
             for x in current.children:
                 printTreeHelper(x)
+
 failed_links_messages = []
 def validate(root):#takes a node
     validateHelper(root)
@@ -123,19 +135,19 @@ def validateHelper(current):#takes a node
     if(current.children is not None):
         for x in current.children:
             if x.page.passed:
-               # temp = current.children.pop()
-                #current.children.append(temp)
+
                 validateHelper(x)
 
             else:
-                message = x.parent.page.url + "this page failed to load URL: "+x.page.url
+                message = x.parent.page.url + "this page failed to load URL: "+x.page.url +" Link: "+x.page.text
                 print(message)
 
 #array of sites you want scanned. probably a bit redundant
 #links = {'http://sll.uccs.edu/', 'http://sll.uccs.edu/org/sga', "http://sll.uccs.edu/org/osa", "http://sll.uccs.edu/org/commute",
-#         "http://sll.uccs.edu/org/liveleadership", "http://sll.uccs.edu/org/lobbies", "http://radio.uccs.edu/" , "http://sll.uccs.edu/org/uccslead"}
-#links  = {"http://sll.uccs.edu/","http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership","http://sll.uccs.edu/org/commute" }
-links = {"http://sll.uccs.edu/"}
+#         "http://sll.uccs.edu/org/liveleadership", "http://sll.uccs.edu/org/lobbies", "http://radio.uccs.edu/" , "http://sll.uccs.edu/org/uccslead"}#in depth search
+#links  = {"http://sll.uccs.edu/","http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership","http://sll.uccs.edu/org/commute" }#something in between
+links = {"http://sll.uccs.edu/"}#quick search
+
 print("Building site: ")
 
 for x in links:
@@ -147,6 +159,6 @@ for x in links:
     print("Validation:")
     validate(root)
     print("----------------------------------")
-    printTree(root)
+    #printTree(root)
 print("Process completed")
 print("*********************************************************")
