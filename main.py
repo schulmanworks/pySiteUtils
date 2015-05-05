@@ -1,4 +1,4 @@
-__author__ = 'rschulma'
+__author__ = 'Ryan Schulman'
 import urllib.request
 import sys
 from lxml import html
@@ -139,9 +139,7 @@ def validateHelper(current):#takes a node
     if(current.children is not None):
         for x in current.children:
             if x.page.passed:
-
                 validateHelper(x)
-
             else:
                 message = x.parent.page.url + " this page failed to load URL: "+x.page.url +" Link: "+x.page.text
                 failed_links_messages.append(message)
