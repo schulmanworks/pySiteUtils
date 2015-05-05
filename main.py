@@ -20,10 +20,6 @@ class Page(object):#when passed is true, the page has a 200 code. Otherwise it f
         self.url = url
         self.passed = passed
 
-    def __init__(self,url,passed):
-        self.url = url
-        self.passed = passed
-
     def setText(self,text):
         self.text = text
 
@@ -40,7 +36,7 @@ def testUrl(link):#test url for non 200 message
         site = opener.read()
         code = opener.getcode()
 
-        if(code == 200):
+        if(code//100 == 2):#any code that starts with a 2
             return True
         else:
             return False
@@ -64,8 +60,14 @@ def makePage(temp, parent):
         pageHasURLs = False
         #urlText = tree.xpath('//a/text()')
         urls = tree.xpath('//a/@href')
-        for x in urls:#for all the links in a page
-
+        urlText = tree.xpath('//a')
+        for x,y in zip(urls,urlText):#for all the links in a page
+            if(len(y.xpath('text()')) > 0):
+                text = y.xpath('text()')[0]
+                #print("url: "+x+"text: "+y.xpath('text()')[0])
+            else:
+                text = "none, may be an image"
+                #print("url: "+x+"text: none, may be an image")
             pageHasURLs = True
 
 
@@ -82,7 +84,7 @@ def makePage(temp, parent):
 
                 test = testUrl(x)
                 newPage = Page(x, test)
-                #newPage.setText(text)
+                newPage.setText(text)
                 current.children.append(TNode(newPage, current, None))
 
         if(not pageHasURLs):#tests for 404 pages that don't return a 404 error message. Will break if urls are added to 404 pages.
@@ -114,6 +116,7 @@ def makeSiteHelper(current):#takes a node
                     finished_links.append(x.page.url)#keeps track of links we have looked at
                     print("page: "+x.page.url)
                     tempPage = makePage(x.page.url, current)#make page from child page
+                    tempPage.page.setText(x.page.text)
                     current.children.insert(i,tempPage)#insert new page into location that once had child page
                     current.children.remove(x)#remove old child page
                     makeSiteHelper(tempPage)#move onto that child's children
@@ -139,14 +142,14 @@ def validateHelper(current):#takes a node
                 validateHelper(x)
 
             else:
-                message = x.parent.page.url + "this page failed to load URL: "+x.page.url +" Link: "+x.page.text
+                message = x.parent.page.url + " this page failed to load URL: "+x.page.url +" Link: "+x.page.text
                 print(message)
 
 #array of sites you want scanned. probably a bit redundant
 #links = {'http://sll.uccs.edu/', 'http://sll.uccs.edu/org/sga', "http://sll.uccs.edu/org/osa", "http://sll.uccs.edu/org/commute",
 #         "http://sll.uccs.edu/org/liveleadership", "http://sll.uccs.edu/org/lobbies", "http://radio.uccs.edu/" , "http://sll.uccs.edu/org/uccslead"}#in depth search
-#links  = {"http://sll.uccs.edu/","http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership","http://sll.uccs.edu/org/commute" }#something in between
-links = {"http://sll.uccs.edu/"}#quick search
+links  = {"http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership","http://sll.uccs.edu/org/commute" }
+#links = {"http://sll.uccs.edu/"}#quick search
 
 print("Building site: ")
 
