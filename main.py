@@ -148,8 +148,8 @@ def validateHelper(current):#takes a node
 #array of sites you want scanned. probably a bit redundant
 #links = {'http://sll.uccs.edu/', 'http://sll.uccs.edu/org/sga', "http://sll.uccs.edu/org/osa", "http://sll.uccs.edu/org/commute",
 #         "http://sll.uccs.edu/org/liveleadership", "http://sll.uccs.edu/org/lobbies", "http://radio.uccs.edu/" , "http://sll.uccs.edu/org/uccslead"}#in depth search
-links  = {"http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership","http://sll.uccs.edu/org/commute" }
-#links = {"http://sll.uccs.edu/"}#quick search
+#links  = {"http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership","http://sll.uccs.edu/org/commute" }
+links = {"http://sll.uccs.edu/","http://sll.uccs.edu/org/lobbies","http://sll.uccs.edu/org/liveleadership"}#quick search
 
 print("Building site: ")
 
