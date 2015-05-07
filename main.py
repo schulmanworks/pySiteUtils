@@ -170,27 +170,28 @@ def validateHelper(current):  #takes a node
                 message = x.parent.page.url + " this page failed to load URL: " + x.page.url + " Link: " + x.page.text
                 failed_links_messages.append(message)
                 print(message)
+def run(links):
+    print("Building site: ")
 
+    for x in links:
+        root = makeSite(x)
+        print("Finished URL: " + x)
+        print("----------------------------------")
+        print("Validation:")
+        validate(root)
+        print("----------------------------------")
+        #printTree(root)
+        for y in links:  #remove top level domains from finished links so they are listed as processed
+            if (y in finished_links):
+                finished_links.remove(y)
+        print("Process completed")
+        print("*********************************************************")
+
+        for str in failed_links_messages:
+            print(str)
 #array of sites you want scanned. probably a bit redundant
 links = {"http://sll.uccs.edu/", "http://sll.uccs.edu/org/lobbies", "http://sll.uccs.edu/org/liveleadership",
          "http://sll.uccs.edu/org/sga", "http://sll.uccs.edu/org/commute",
          "http://sll.uccs.edu/org/uccslead"}  #quick search
 
-print("Building site: ")
-
-for x in links:
-    root = makeSite(x)
-    print("Finished URL: " + x)
-    print("----------------------------------")
-    print("Validation:")
-    validate(root)
-    print("----------------------------------")
-    #printTree(root)
-    for y in links:  #remove top level domains from finished links so they are listed as processed
-        if (y in finished_links):
-            finished_links.remove(y)
-print("Process completed")
-print("*********************************************************")
-
-for str in failed_links_messages:
-    print(str)
+run(links)
