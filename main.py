@@ -195,16 +195,19 @@ def visible(element):
         return False
     return True
 def spellcheck(root):
-    spellcheckhelper(root)
-def spellcheckhelper(current):
+    finished_links = []
+    spellcheckhelper(root, finished_links)
+def spellcheckhelper(current, finished_links):
     print("----------------\n"+current.page.url)
-    if current.page.passed:
+    if current.page.passed and current.page.url not in finished_links:
+        finished_links.append(current.page.url)
         response = urllib.request.urlopen(link)
         html =response.read()
         soup = BeautifulSoup(html, 'html.parser')
         soup = soup.body
         for element in soup(text=lambda text: isinstance(text, Comment)):
             element.extract()
+
         [s.extract() for s in soup('script')]
         [s.extract() for s in soup('img')]
         [s.extract() for s in soup('a')]
@@ -221,12 +224,14 @@ def spellcheckhelper(current):
 
         for word in errors:
             dictionary = Dict()
-            print ("ERROR: " + word + "Our best guess: "+dictionary.suggest(word))
+            print ("ERROR: " + word + "\nOur best guesses: ")
+            [print(w) for w in dictionary.suggest(str(word))]
+            print("----")
 
         print("------")
         if(current.children is not None):
             for x in current.children:
-                spellcheckhelper(x)
+                spellcheckhelper(x, finished_links)
 
 
 def run(link, domain):
