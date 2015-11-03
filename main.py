@@ -198,7 +198,6 @@ def spellcheck(root):
     finished_links = []
     spellcheckhelper(root, finished_links)
 def spellcheckhelper(current, finished_links):
-    print("----------------\n"+current.page.url)
     if current.page.passed and current.page.url not in finished_links:
         finished_links.append(current.page.url)
         response = urllib.request.urlopen(link)
@@ -221,7 +220,8 @@ def spellcheckhelper(current, finished_links):
             else:
                 errors.append(err.word)
 
-
+        if errors is not None:
+            print("----------------\n"+current.page.url)
         for word in errors:
             dictionary = Dict()
             print ("ERROR: " + word + "\nOur best guesses: ")
