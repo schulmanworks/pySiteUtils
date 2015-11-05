@@ -38,7 +38,14 @@ class Page(object):  # when passed is true, the page has a 200 code. Otherwise i
         self.text = text
 
     def isOnDomain(self):
-        if (self.url.find(self.domain) == -1):  #and self.url.find("radio.uccs.edu") == -1):#need to add all sll domains/sub-domains
+        #check for http or https
+        stringconstant = 0 #set to length of http or https
+        if(self.url.find("https")):
+            stringconstant = 7
+        else:
+            stringconstant=6
+        #check if we are on domain
+        if (self.url[stringconstant:stringconstant+len(self.domain)].find(self.domain) == -1):  #and self.url.find("radio.uccs.edu") == -1):#need to add all sll domains/sub-domains
             return False
         else:
             return True
@@ -89,7 +96,7 @@ def makePage(temp, parent, domain):
 
             if (x.find(
                     "mailto") != -1):  #mailto links are ignored, remove continue and comment marks to mark them as failed instead
-                continue
+                pass
                 #newPage = Page(x, False)
                 #current.children.append(TNode(newPage, current, None))
 
@@ -114,18 +121,10 @@ def makePage(temp, parent, domain):
     else:
         return TNode(Page(link, False, domain), parent, None)
 
-
-#algorithm for make site function
-#while link is on uccs domain
-#if page.passed is true
-#make page
-#move onto children
-
-#takes a URL
+#makes a tree of all links on a given domain that branch fom a starting page
 def makeSite(link, domain):  #make the website into a tree of urls
    # print("######################")
     #print("page: " + link)
-
     root = makePage(link, None, domain)
     finished_links=[link]
     makeSiteHelper(root, domain, finished_links)
@@ -139,7 +138,7 @@ def makeSiteHelper(current, domain, finished_links):  #takes a node
             for x in current.children:
                 if (x.page.isOnDomain() and x.page.url not in finished_links and x.page.passed):
                     finished_links.append(x.page.url)  #keeps track of links we have looked at
-                    print("page: " + x.page.url)
+                    #print("page: " + x.page.url)
                     tempPage = makePage(x.page.url, current, domain)  #make page from child page
                     tempPage.page.setText(x.page.text)
                     current.children.insert(i, tempPage)  #insert new page into location that once had child page
@@ -148,41 +147,23 @@ def makeSiteHelper(current, domain, finished_links):  #takes a node
                     i = 1 + i  #incrment list index
 
 
-def printTree(root):  #takes a node
-    printTreeHelper(root)
-
-
-def printTreeHelper(current):  #takes a node
-    if current is not None:
-       # print("%50s%-s", current.page.url, current.page.passed)
-        if current.children is not None:
-            for x in current.children:
-                printTreeHelper(x)
-
-
 global failed_links_messages
 failed_links_messages = []
 
-def printTree(root):
-    printTreeHelper(root)
-def printTreeHelper(current):
+def printTree(current):
     print(current.page.url)
     if current.children is not None:
         print("\n-------Branch---------")
         for x in current.children:
             print(x.page.url)
         for x in current.children:
-            printTreeHelper(x)
-
-def validate(root):  #takes a node
-    validateHelper(root)
-
-
-def validateHelper(current):  #takes a node
+            printTree(x)
+#validates all URLs in the tree
+def validateURLs(current):  #takes a node
     if (current.children is not None):
         for x in current.children:
             if x.page.passed:
-                validateHelper(x)
+                validateURLs(x)
             else:
                 message = x.parent.page.url + " this page failed to load URL: " + x.page.url + " Link: " + x.page.text
                 failed_links_messages.append(message)
@@ -194,54 +175,72 @@ def visible(element):
     elif re.match('.*<!--.*-->.*', string, re.DOTALL):
         return False
     return True
-def spellcheck(root):
-    finished_links = []
-    spellcheckhelper(root, finished_links)
-def spellcheckhelper(current, finished_links):
-    if current.page.passed and current.page.url not in finished_links:
-        finished_links.append(current.page.url)
-        response = urllib.request.urlopen(link)
-        html =response.read()
-        soup = BeautifulSoup(html, 'html.parser')
-        soup = soup.body
-        for element in soup(text=lambda text: isinstance(text, Comment)):
-            element.extract()
 
-        [s.extract() for s in soup('script')]
-        [s.extract() for s in soup('img')]
-        [s.extract() for s in soup('a')]
-        texts = soup.findAll(text=True)
+#strips everything that isn't visible text out of a page and returns the visible text
+def getPageText(link):
+    response = urllib.request.urlopen(link)
+    html =response.read()
+    soup = BeautifulSoup(html, 'html.parser')
+    soup = soup.body
+    for element in soup(text=lambda text: isinstance(text, Comment)):
+        element.extract()
+    [s.extract() for s in soup('script')]
+    [s.extract() for s in soup('img')]
+    [s.extract() for s in soup('a')]
+
+    return soup.findAll(text=True)
+#obviously this spellchecks everything in the tree
+def spellCheckTree(current, finished_links=[], errorPages = [], errors=[]):
+    if current.page.passed and current.page.url not in finished_links and current.page.isOnDomain():
+        finished_links.append(current.page.url)
+        texts =getPageText(current.page.url)
         checker= SpellChecker('en_US')
         checker.set_text(''.join(texts))
         errors = []#to be filled with strings
+        #print("----------------\n"+current.page.url)
+        haserrors=False
         for err in checker:
-            if any(s in err.word for s in string.ascii_uppercase):
-                pass
-            else:
-                errors.append(err.word)
-
-        if errors is not None:
-            print("----------------\n"+current.page.url)
-        for word in errors:
-            dictionary = Dict()
-            print ("ERROR: " + word + "\nOur best guesses: ")
-            [print(w) for w in dictionary.suggest(str(word))]
-            print("----")
-
-        print("------")
+            haserrors=True
+            break
+        if haserrors:
+            errorPages.append([current.page.url])
+            errorPages[len(errorPages)-1].append(checker)
         if(current.children is not None):
             for x in current.children:
-                spellcheckhelper(x, finished_links)
-
+                spellCheckTree(x, finished_links=finished_links, errorPages = errorPages)
+        return errorPages
 
 def run(link, domain):
     print("Building site: ")
     root = makeSite(link, domain)
     print("Site built")
     return root
+def uccsDictFilter(s):
+    rejects = ["uccs","edu","studlife","Bayer","Wienholtz","Cucchiara","Cohe","Frazier","Keener",
+               "Bates","Bowen","Coppa","Edstrom","Ericson",'Hillmann','Merrifield','Mientka',
+               'Pattirane','Schulman','Stickney','Tafoya','Wilson','doc','docx']
+    if s[0] in string.ascii_uppercase and s[1] in string.ascii_uppercase:
+        return False
+    elif s in rejects:
+        return False
+
+    return True
 
 #array of sites you want scanned. probably a bit redundant
-link = "http://sll.uccs.edu/"
-domain = "sll.uccs.edu/"
+link = "http://sll.uccs.edu"
+domain = "sll.uccs.edu"
 root = run(link, domain)
-spellcheck(root)
+pages = spellCheckTree(root)
+if pages is not None:
+    for i in pages:
+        isfirst = True
+        for chkr in i:
+            if chkr is not None:
+                if(isfirst):
+                    print(chkr)#the first index is not a checker. it is the url
+                    isfirst = False
+                else:
+                    temp=[]
+                    [temp.append(err.word) for err in chkr]
+                    [print(word) for word in filter(uccsDictFilter,temp)]
+        print("--------------------------")
