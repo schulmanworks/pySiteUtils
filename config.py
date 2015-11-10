@@ -1,0 +1,3 @@
+__author__ = 'ryan'
+WTF_CSRF_ENABLED = True
+SECRET_KEY='WmSH67P70mM89PuTMawZE06PWvWH0034'

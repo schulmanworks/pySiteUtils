@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }} | PySiteUtils</title>
+</head>
+<body>
+<ul>
+    {% if elems is not none %}
+    {% for e in elems %}
+    <li>Page:
+    {% set isFirst = True %}
+    {% for str in e %}
+        {% if isFirst %}
+            {% set isFirst = False %}
+            {{ str }}
+            </li><ul>
+        {% else %}
+            {% for s in str %}
+            <li>{{ s }}</li>
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+    </ul>
+
+    {% endfor %}
+    {% else %}
+    <li>Object is None</li>
+    {% endif %}
+</ul>
+
+</body>
+</html>
