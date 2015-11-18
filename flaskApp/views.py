@@ -12,10 +12,9 @@ def processInput():
     url = request.form['url']
     domain = request.form['domain']
     if url != "" and url is not None:
-        root=run(url,domain)
+        root=run(url,domain)#this run from main.py not run.py
         pages = spellCheckTree(root)
-        arr = processSpellCheck(pages)
+        #arr = processSpellCheck(pages)
         return render_template('validation.html',title="validation",elems=pages)
     else:
         return "You entered nothing"
-
