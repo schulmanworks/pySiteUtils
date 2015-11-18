@@ -12,7 +12,6 @@ lxml==3.3.3
 oauthlib==0.6.1
 pycurl==7.19.3
 pyenchant==1.6.6
-pygobject==3.12.0
 requests==2.6.2
 
 
