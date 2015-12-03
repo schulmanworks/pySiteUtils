@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ title }} | PySiteUtils</title>
+    </head>
+    <body>
+        <ul>
+            {% if elems is not none %}
+            {% for e in elems %}
+            <li>Page:
+            {% set isFirst = True %}
+            {% for str in e %}
+                {% if isFirst %}
+                    {% set isFirst = False %}
+                    {{ str }}
+                    </li><ul>
+                {% else %}
+
+                    {% for s in parseSpellChecker(str) %}
+                    <li>{{ s }}</li>
+                    {% endfor %}
+
+                {% endif %}
+            {% endfor %}
+            </ul>
+
+            {% endfor %}
+            {% else %}
+            <li>An error occurred. Please refresh the page.</li>
+            {% endif %}
+        </ul>
+
+    </body>
+</html>

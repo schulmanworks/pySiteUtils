@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }} | PySiteUtils</title>
+</head>
+<body>
+
+<form actions="" method="post" name="url">
+    {{ form.hidden_tag() }}
+    <p>Please enter a url to start at:
+    {{ form.url() }}</p>
+    <p>Please enter the domain you wish to stay on:
+    {{ form.domain() }}</p>
+    <input type="submit" name="url-submit" value="Send">
+
+</form>
+</body>
+</html>
