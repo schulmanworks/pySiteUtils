@@ -209,6 +209,7 @@ def spellCheckTree(current, finished_links=[], errorPages = [], errors=[]):
             for x in current.children:
                 spellCheckTree(x, finished_links=finished_links, errorPages = errorPages)
         return errorPages
+<<<<<<< HEAD
 def getHTags(page):
     url = requests.get(page.url)
     tree = html.fromstring(url.text)
@@ -224,3 +225,5 @@ def makeSitemap(current, finished_links=[], pages = []):
             for x in current.children:
                 makeSitemap(x, finished_links=finished_links, pages = pages)
         return pages
+=======
+>>>>>>> 3ec7015091e43aa8d9d7d746e9e14187fbcd2471
