@@ -1,7 +1,7 @@
 __author__ = 'Ryan Schulman'
 import urllib.request
 import sys
-from lxml import html
+from lxml import html, etree
 import requests
 import string
 from bs4 import BeautifulSoup, Comment
@@ -209,11 +209,16 @@ def spellCheckTree(current, finished_links=[], errorPages = [], errors=[]):
             for x in current.children:
                 spellCheckTree(x, finished_links=finished_links, errorPages = errorPages)
         return errorPages
-<<<<<<< HEAD
+
 def getHTags(page):
     url = requests.get(page.url)
     tree = html.fromstring(url.text)
-    htags = tree.xpath("//h1").append(tree.xpath("//h2")).append(tree.xpath("//h3"))
+    htags = []
+    temp =tree.xpath("//h1/text()")
+    htags.append(temp)
+    temp = tree.xpath("//h2/text()")
+    htags.append(temp)
+
     return htags
 def makeSitemap(current, finished_links=[], pages = []):
     if current.page.passed and current.page.url not in finished_links and current.page.isOnDomain():
@@ -225,5 +230,21 @@ def makeSitemap(current, finished_links=[], pages = []):
             for x in current.children:
                 makeSitemap(x, finished_links=finished_links, pages = pages)
         return pages
-=======
->>>>>>> 3ec7015091e43aa8d9d7d746e9e14187fbcd2471
+
+def printSitemap(current):
+    for x in current:
+        first=True
+        for y in x:
+            if first:
+                print("\n")
+                print(y)
+                first=False
+            else:
+                i = 1
+                for z in y:
+                    for a in z:
+                            print('h'+str(i))
+                            print(a)
+                            i=i+1
+
+

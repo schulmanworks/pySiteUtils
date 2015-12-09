@@ -1,4 +1,4 @@
-from pySiteUtils import makeSite,spellCheckTree
+from pySiteUtils import makeSite,spellCheckTree, makeSitemap, printSitemap
 import string
 
 def run(link, domain):
@@ -35,8 +35,10 @@ def processSpellCheck(pages, str=[]):
                             print(word)
     return str
 #array of sites you want scanned. probably a bit redundant
-#link = "http://sll.uccs.edu"
-#domain = "sll.uccs.edu"
-#root = run(link, domain)
+link = "http://sll.uccs.edu"
+domain = "sll.uccs.edu"
+root = run(link, domain)
 #pages = spellCheckTree(root)
 #processSpellCheck(pages)
+sitemap = makeSitemap(root)
+printSitemap(sitemap)
