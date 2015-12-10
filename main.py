@@ -1,4 +1,4 @@
-from pySiteUtils import makeSite,spellCheckTree, makeSitemap, printSitemap
+from pySiteUtils import printTree, validateURLs, makeSite, processSpellCheck, spellCheckTree, makeSitemap,printSitemap
 import string
 
 def run(link, domain):
@@ -6,7 +6,11 @@ def run(link, domain):
     root = makeSite(link, domain)
     print("Site built")
     return root
-def uccsDictFilter(s):
+def uccsDictFilter(s,x):
+    print("s")
+    print(s)
+    print("x")
+    print(x)
     rejects = ["uccs","edu","studlife","Bayer","Wienholtz","Cucchiara","Cohe","Frazier","Keener",
                "Bates","Bowen","Coppa","Edstrom","Ericson",'Hillmann','Merrifield','Mientka',
                'Pattirane','Schulman','Stickney','Tafoya','Wilson','doc','docx']
@@ -16,29 +20,14 @@ def uccsDictFilter(s):
         return False
 
     return True
-#turns the pages from spellCheckTree into a single array
-def processSpellCheck(pages, str=[]):
-    if pages is not None:
-        for i in pages:
-            isfirst = True
-            for chkr in i:
-                if chkr is not None:
-                    if(isfirst):
-                        str.append(chkr)#the first index is not a checker. it is the url
-                        print(chkr)
-                        isfirst = False
-                    else:
-                        temp=[]
-                        [temp.append(err.word) for err in chkr]
-                        for word in filter(uccsDictFilter,temp):
-                            str.append(word)
-                            print(word)
     return str
 #array of sites you want scanned. probably a bit redundant
-link = "http://sll.uccs.edu"
-domain = "sll.uccs.edu"
+link = "http://sll.uccs.edu/org/mlchelp"
+domain = "sll.uccs.edu/org/mlchelp"
 root = run(link, domain)
+#map = makeSitemap(root)
+#printSitemap(map)
 #pages = spellCheckTree(root)
-#processSpellCheck(pages)
-sitemap = makeSitemap(root)
-printSitemap(sitemap)
+#processSpellCheck(pages, uccsDictFilter)
+printTree(root)
+print(validateURLs(root))

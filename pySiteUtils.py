@@ -1,13 +1,11 @@
 __author__ = 'Ryan Schulman'
 import urllib.request
-import sys
-from lxml import html, etree
+from lxml import html
 import requests
 import string
 from bs4 import BeautifulSoup, Comment
 import urllib
 from enchant.checker import SpellChecker
-from enchant import Dict
 import re
 #global finished_links
 #finished_links = []
@@ -147,9 +145,6 @@ def makeSiteHelper(current, domain, finished_links):  #takes a node
                     i = 1 + i  #incrment list index
 
 
-global failed_links_messages
-failed_links_messages = []
-
 def printTree(current):
     print(current.page.url)
     if current.children is not None:
@@ -159,15 +154,16 @@ def printTree(current):
         for x in current.children:
             printTree(x)
 #validates all URLs in the tree
-def validateURLs(current):  #takes a node
+def validateURLs(current, failed_links_messages = []):  #takes a node
     if (current.children is not None):
         for x in current.children:
             if x.page.passed:
-                validateURLs(x)
+                return validateURLs(x, failed_links_messages=failed_links_messages)
             else:
                 message = x.parent.page.url + " this page failed to load URL: " + x.page.url + " Link: " + x.page.text
-                failed_links_messages.append(message)
+                return failed_links_messages.append(message)
                 #print(message)
+
 #found this at http://stackoverflow.com/questions/1936466/beautifulsoup-grab-visible-webpage-text
 def visible(element):
     if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
@@ -209,7 +205,23 @@ def spellCheckTree(current, finished_links=[], errorPages = [], errors=[]):
             for x in current.children:
                 spellCheckTree(x, finished_links=finished_links, errorPages = errorPages)
         return errorPages
-
+#turns the pages from spellCheckTree into a single array
+def processSpellCheck(pages, filter, str=[]):
+    if pages is not None:
+        for i in pages:
+            isfirst = True
+            for chkr in i:
+                if chkr is not None:
+                    if(isfirst):
+                        str.append(chkr)#the first index is not a checker. it is the url
+                        print(chkr)
+                        isfirst = False
+                    else:
+                        temp=[]
+                        [temp.append(err.word) for err in chkr]
+                        for word in filter(filter,temp):
+                            str.append(word)
+                            print(word)
 def getHTags(page):
     url = requests.get(page.url)
     tree = html.fromstring(url.text)
